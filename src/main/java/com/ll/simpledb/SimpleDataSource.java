@@ -1,8 +1,6 @@
 package com.ll.simpledb;
 
 import javax.sql.DataSource;
-import java.io.Closeable;
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.*;
 import java.util.Properties;

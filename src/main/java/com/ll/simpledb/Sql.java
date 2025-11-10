@@ -3,7 +3,6 @@ package com.ll.simpledb;
 import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.function.Function;
 
 public class Sql {
     private String query;
@@ -106,8 +105,17 @@ public class Sql {
         }
     }
 
+    public <T> List<T> selectRows(Class<T> clazz) {
+        List<Map<String, Object>> rawResult = selectRows();
+        return rawResult.stream().map(map -> Mapper.toObj(map, clazz)).toList();
+    }
+
     public Map<String, Object> selectRow() {
         return selectRows().getFirst();
+    }
+
+    public <T> T selectRow(Class<T> clazz) {
+        return selectRows(clazz).getFirst();
     }
 
 

@@ -1,7 +1,6 @@
 package com.ll.simpledb;
 
 
-import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
@@ -12,6 +11,7 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class SimpleDb  implements AutoCloseable {
     private static final ThreadLocal<Connection> HOLDER = new ThreadLocal<>();
+
     private static final String DEFAULT = "DEFAULT";
 
     private final String connectionName;
@@ -90,12 +90,42 @@ public class SimpleDb  implements AutoCloseable {
         }
     }
 
+    public void startTransaction() {
+        try {
+            conn().setAutoCommit(false);
+        } catch (SQLException e) {
+            throw new IllegalStateException("cannot start transaction");
+        }
+    }
 
+    public void commit() {
+        try {
+            Connection c = conn();
+            c.commit();
+            c.setAutoCommit(true);
+        } catch (SQLException e) {
+            throw new IllegalArgumentException("commit() fail");
+        }
+    }
+
+    public void rollback() {
+        try {
+            Connection c = conn();
+            c.rollback();
+            c.setAutoCommit(true);
+        } catch (SQLException e) {
+            throw new IllegalArgumentException("rollback() fail");
+        }
+    }
 
 
     @Override
-    public void close() throws Exception {
-
+    public void close() {
+        try {
+            conn().close();
+        } catch (SQLException e) {
+            throw new IllegalStateException("cannot close connection");
+        }
     }
 
     private Connection conn() throws SQLException {
