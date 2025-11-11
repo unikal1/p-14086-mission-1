@@ -1,7 +1,6 @@
 package com.ll.simpledb;
 
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 
 import javax.sql.DataSource;
 import java.sql.*;
@@ -26,9 +25,6 @@ public class SimpleDb implements AutoCloseable {
     /** 실제 DB 연결을 제공하는 DataSource */
     private final DataSource dataSource;
 
-    /** 개발 모드 여부 */
-    @Setter
-    private boolean devMode;
 
     /**
      * 새로운 DataSource 를 생성하여 등록하고, 커넥션을 ThreadLocal 에 보관합니다.
@@ -42,7 +38,6 @@ public class SimpleDb implements AutoCloseable {
      */
     public SimpleDb(String cName, String host, String user, String password, String dbName) {
         this.connectionName = cName;
-        this.devMode = false;
 
         DataSource newDs = ConnectionManager.createDataSource(host, user, password, dbName);
         DataSourceRegistry.register(this.connectionName, newDs);
@@ -77,7 +72,6 @@ public class SimpleDb implements AutoCloseable {
      */
     public SimpleDb(String name) {
         this.connectionName = name;
-        this.devMode = false;
 
         try {
             this.dataSource = DataSourceRegistry.get(name);
@@ -94,6 +88,10 @@ public class SimpleDb implements AutoCloseable {
      */
     public SimpleDb() {
         this(DEFAULT);
+    }
+
+    public void setDevMode(boolean mode) {
+        LOGGER.mode = mode;
     }
 
     /**
@@ -239,4 +237,5 @@ public class SimpleDb implements AutoCloseable {
             ps.setString(idx, value.toString());
         }
     }
+
 }

@@ -26,3 +26,4 @@ startTransaction, commit, rollback을 통해 단순한 트랜잭션을 처리할
 
 ### 7. 커넥션 종료 기능 <br>
 AutoCloseable을 구현하므로 try-with-resources 문법을 사용할 수 있습니다.
+
