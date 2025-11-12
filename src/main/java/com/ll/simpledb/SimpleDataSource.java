@@ -54,14 +54,14 @@ public class SimpleDataSource extends SimpleConfig implements DataSource, AutoCl
         // 최소 풀 사이즈만큼 선차로 커넥션을 만들어 큐에 적재
         try {
             for (int i = 0; i < getMinPoolSize(); i++) {
-                connectionPool.offer(getNewConnection());
+                getNewConnection();
             }
         } catch (SQLException e) {
             // 초기화 실패는 치명적이므로 런타임 예외로 승격
             throw new IllegalStateException("connectionPool initial fail", e);
         }
 
-        LOGGER.debug("connection pool init success");
+        LOGGER.debug("connection pool init success [" + connectionPool.size() + "]");
     }
 
     /**
@@ -213,6 +213,7 @@ public class SimpleDataSource extends SimpleConfig implements DataSource, AutoCl
 
         // 1) 즉시 꺼낼 수 있으면 반환
         Connection c = connectionPool.poll();
+        if(c != null) LOGGER.debug("[" + Thread.currentThread().getName() + "] get connection from pool");
 
         // 2) 없으면 생성 여지가 있는지 확인 (이중 체크 + 동기화)
         if (c == null) {
@@ -227,6 +228,7 @@ public class SimpleDataSource extends SimpleConfig implements DataSource, AutoCl
             if (c == null) {
                 try {
                     c = connectionPool.poll(getBorrowTimeout().toMillis(), TimeUnit.MILLISECONDS);
+                    LOGGER.debug("[" + Thread.currentThread().getName() + "] until rented connection close and return...");
                 } catch (InterruptedException e) {
                     // 인터럽트 전파 + SQLException 래핑
                     LOGGER.warn("wait connection from pool until connection timeout");
@@ -236,7 +238,7 @@ public class SimpleDataSource extends SimpleConfig implements DataSource, AutoCl
             }
         }
 
-        if (c == null) throw new SQLException("cannot poll Connection from CP");
+        if (c == null) throw new SQLException("cannot pool Connection from CP");
         return c;
     }
 
@@ -249,6 +251,7 @@ public class SimpleDataSource extends SimpleConfig implements DataSource, AutoCl
         Connection unwrapedConnection = DriverManager.getConnection(getJdbcUrl(), getUsername(), getPassword());
         created.addAndGet(1);
 
+        LOGGER.debug("create new physical connection and add to pool, current created [" + created + "]");
         // 프록시로 감싸 close() 호출 시 반환 동작을 수행하도록 함
         Connection wrappedConnection = wrapConnection(unwrapedConnection);
 
@@ -276,7 +279,7 @@ public class SimpleDataSource extends SimpleConfig implements DataSource, AutoCl
                     if (isShutDown.get()) {
                         closePhysicalConnection(connection);
                     } else {
-                        LOGGER.debug("connection return to poll");
+                        LOGGER.debug("[" + Thread.currentThread().getName() + "] connection return to pool");
                         connectionPool.offer((Connection) proxy); // 프록시 자체를 반환
                     }
                     return null;

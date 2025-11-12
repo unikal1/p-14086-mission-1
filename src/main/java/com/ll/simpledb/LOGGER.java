@@ -2,6 +2,7 @@ package com.ll.simpledb;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class LOGGER {
 
@@ -10,6 +11,8 @@ public class LOGGER {
 
     private static final DateTimeFormatter FMT =
             DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+    private static AtomicInteger line = new AtomicInteger(0);
 
     // ANSI 색상
     private static final String RESET = "\u001B[0m";
@@ -21,6 +24,8 @@ public class LOGGER {
     private static String now() {
         return LocalDateTime.now().format(FMT);
     }
+
+
 
     public static void info(String msg) {
         System.out.println(INFO_COLOR + now() + " [INFO] " + msg + RESET);
@@ -36,6 +41,6 @@ public class LOGGER {
 
     public static void debug(String msg) {
         if (!mode) return; // debug 비활성화 시 출력 X
-        System.out.println(DEBUG_COLOR + now() + " [DEBUG] " + msg + RESET);
+        System.out.println(line.getAndAdd(1) + " : " +  DEBUG_COLOR + now() + " [DEBUG] " + msg + RESET);
     }
 }

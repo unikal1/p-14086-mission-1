@@ -81,7 +81,7 @@ public class SimpleConfig {
                         int maxPoolSize,
                         Duration borrowTimeout) {
 
-        // 연결 타임아웃 기본값 설정 (not used in pool directly, but exposed as config)
+        // 연결 타임 아웃 기본값 설정 (not used in pool directly, but exposed as config)
         this.connectionTimeout = CONNECTION_TIMEOUT;
 
         // 인증 정보 및 URL 초기화

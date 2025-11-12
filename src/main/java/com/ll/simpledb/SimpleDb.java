@@ -195,6 +195,7 @@ public class SimpleDb implements AutoCloseable {
     public void close() {
         try {
             conn().close();
+            HOLDER.remove();
         } catch (SQLException e) {
             throw new IllegalStateException("cannot close connection");
         }
